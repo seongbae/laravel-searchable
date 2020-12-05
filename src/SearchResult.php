@@ -2,6 +2,8 @@
 
 namespace Spatie\Searchable;
 
+use Carbon\Carbon;
+
 class SearchResult
 {
     /** @var \Spatie\Searchable\Searchable */
