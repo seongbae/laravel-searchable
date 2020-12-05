@@ -24,7 +24,7 @@ class SearchResult
     /** @carbon date */
     public $created;
 
-    public function __construct(Searchable $searchable, string $title, ?string $url = null, ?string $description = null, Carbon $created)
+    public function __construct(Searchable $searchable, string $title, ?string $url = null, ?string $description = null, ?string $created)
     {
         $this->searchable = $searchable;
 
