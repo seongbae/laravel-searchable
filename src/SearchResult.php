@@ -35,7 +35,6 @@ class SearchResult
         $this->description = $description;
 
         $this->created = $created;
-
     }
 
     public function setType(string $type): self
