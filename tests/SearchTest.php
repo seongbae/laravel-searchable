@@ -214,4 +214,116 @@ class SearchTest extends TestCase
 
         $this->assertCount(2, $attributes);
     }
+
+    /** @test */
+    public function it_can_limit_aspect_results()
+    {
+        $search = new Search();
+
+        TestModel::createWithName('Android 16');
+        TestModel::createWithName('Android 17');
+        TestModel::createWithName('Android 18');
+        TestModel::createWithName('Android 19');
+        TestModel::createWithName('Android 20');
+        TestModel::createWithName('Android 21');
+
+        $search->registerModel(TestModel::class, function (ModelSearchAspect $modelSearchAspect) {
+            $modelSearchAspect
+                ->addSearchableAttribute('name');
+        });
+        $results = $search->limitAspectResults(2)->perform('android');
+        $this->assertCount(2, $results);
+    }
+
+    /** @test */
+    public function it_can_limit_multiple_aspect_results()
+    {
+        $search = new Search();
+
+        TestModel::createWithName('alex doe');
+        TestModel::createWithName('alex doe the second');
+        TestModel::createWithName('alex doe the third');
+        TestModel::createWithName('alex doe the fourth');
+        TestModel::createWithName('jenna');
+
+        // This will return 2 as it's results are hard coded
+        $search->registerAspect(CustomNameSearchAspect::class);
+        // Our limiter should apply to the second aspect registered here and will make it return only 2
+        $search->registerModel(TestModel::class, 'name');
+        $results = $search->limitAspectResults(2)->perform('doe');
+        $this->assertCount(4, $results);
+    }
+
+    /**
+     * @test
+     */
+    public function it_can_search_special_character_sqlite()
+    {
+        TestModel::createWithName("%");
+        TestModel::createWithName("alex%doe");
+
+        TestModel::createWithName("_");
+        TestModel::createWithName("alex_doe the second");
+
+        TestModel::createWithName("\\");
+        TestModel::createWithName("jen\\na");
+
+        TestModel::createWithName("jen\\%na");
+        TestModel::createWithName("jen\\_na");
+
+        $search = new Search();
+        $search->registerModel(TestModel::class, 'name');
+
+        $searchResults = $search->perform('%');
+        $this->assertCount(3, $searchResults);
+
+        $searchResults = $search->perform('_');
+        $this->assertCount(3, $searchResults);
+
+        $searchResults = $search->perform('\\');
+        $this->assertCount(4, $searchResults);
+
+        $searchResults = $search->perform('\\%');
+        $this->assertCount(1, $searchResults);
+
+        $searchResults = $search->perform('\\_');
+        $this->assertCount(1, $searchResults);
+    }
+
+    /**
+     * @test
+     * @define-env usesMySqlConnection
+     */
+    public function it_can_search_special_character_mysql()
+    {
+        TestModel::createWithName("%");
+        TestModel::createWithName("alex%doe");
+
+        TestModel::createWithName("_");
+        TestModel::createWithName("alex_doe the second");
+
+        TestModel::createWithName("\\");
+        TestModel::createWithName("jen\\na");
+
+        TestModel::createWithName("jen\\%na");
+        TestModel::createWithName("jen\\_na");
+
+        $search = new Search();
+        $search->registerModel(TestModel::class, 'name');
+
+        $searchResults = $search->perform('%');
+        $this->assertCount(3, $searchResults);
+
+        $searchResults = $search->perform('_');
+        $this->assertCount(3, $searchResults);
+
+        $searchResults = $search->perform('\\');
+        $this->assertCount(4, $searchResults);
+
+        $searchResults = $search->perform('\\%');
+        $this->assertCount(1, $searchResults);
+
+        $searchResults = $search->perform('\\_');
+        $this->assertCount(1, $searchResults);
+    }
 }

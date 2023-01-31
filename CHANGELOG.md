@@ -2,6 +2,61 @@
 
 All notable changes to `laravel-searchable` will be documented in this file
 
+## 1.11.2 - 2023-01-24
+
+### What's Changed
+
+- Laravel 10.x Compatibility by @laravel-shift in https://github.com/spatie/laravel-searchable/pull/140
+
+**Full Changelog**: https://github.com/spatie/laravel-searchable/compare/1.11.1...1.11.2
+
+## 1.11.1 - 2023-01-24
+
+### What's Changed
+
+- Add PHP 8.2 Support by @patinthehat in https://github.com/spatie/laravel-searchable/pull/135
+- fix: use mixin for static analysis by @ju5t in https://github.com/spatie/laravel-searchable/pull/139
+
+### New Contributors
+
+- @patinthehat made their first contribution in https://github.com/spatie/laravel-searchable/pull/135
+- @ju5t made their first contribution in https://github.com/spatie/laravel-searchable/pull/139
+
+**Full Changelog**: https://github.com/spatie/laravel-searchable/compare/1.11.0...1.11.1
+
+## 1.11.0 - 2022-01-13
+
+## What's Changed
+
+- Update code block syntax by @grantholle in https://github.com/spatie/laravel-searchable/pull/126
+- Add support for Laravel 9
+
+## New Contributors
+
+- @grantholle made their first contribution in https://github.com/spatie/laravel-searchable/pull/126
+
+**Full Changelog**: https://github.com/spatie/laravel-searchable/compare/1.10.0...1.11.0
+
+## 1.10.0 - 2021-06-24
+
+- Allow searching with special characters (#117)
+
+## 1.9.3 - 2021-may-the-forth
+
+- changed query building order to play nice with forwarded calls (#101)
+
+## 1.9.2 - 2021-05-03
+
+- handle columns with reserved names (#110)
+
+## 1.9.1 - 2020-12-27
+
+- add support for PHP 8.0
+
+## 1.9.0 - 2020-12-09
+
+- add aspect search result limit (#82)
+
 ## 1.8.0 - 2020-11-28
 
 - allow to use same query method (#81)

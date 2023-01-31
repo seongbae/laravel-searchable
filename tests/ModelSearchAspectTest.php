@@ -42,6 +42,20 @@ class ModelSearchAspectTest extends TestCase
     }
 
     /** @test */
+    public function it_can_perform_a_search_on_columns_with_reserved_name()
+    {
+        TestModel::createWithNameAndLastName('jane', 'doe');
+        TestModel::createWithNameAndLastName('Taylor', 'Otwell');
+
+        $searchAspect = ModelSearchAspect::forModel(TestModel::class, 'name', 'where');
+
+        $results = $searchAspect->getResults('Taylor Otwell');
+
+        $this->assertCount(1, $results);
+        $this->assertInstanceOf(TestModel::class, $results[0]);
+    }
+
+    /** @test */
     public function it_can_add_searchable_attributes()
     {
         $searchAspect = ModelSearchAspect::forModel(TestModel::class)
@@ -71,7 +85,7 @@ class ModelSearchAspectTest extends TestCase
 
         $searchAspect->getResults('john');
 
-        $expectedQuery = 'select * from "test_models" where (LOWER(name) LIKE ? or "email" = ?)';
+        $expectedQuery = 'select * from "test_models" where (LOWER("name") LIKE ? ESCAPE ? or "email" = ?)';
 
         $executedQuery = Arr::get(DB::getQueryLog(), '0.query');
 
@@ -110,13 +124,13 @@ class ModelSearchAspectTest extends TestCase
 
         $searchAspect->getResults('john');
 
-        $expectedQuery = 'select * from "test_models" where "active" = ? and (LOWER(name) LIKE ?)';
+        $expectedQuery = 'select * from "test_models" where (LOWER("name") LIKE ? ESCAPE ?) and "active" = ?';
 
         $executedQuery = Arr::get(DB::getQueryLog(), '0.query');
-        $firstBinding = Arr::get(DB::getQueryLog(), '0.bindings.0');
+        $secondBinding = Arr::get(DB::getQueryLog(), '0.bindings.2');
 
         $this->assertEquals($expectedQuery, $executedQuery);
-        $this->assertEquals(1, $firstBinding);
+        $this->assertEquals(1, $secondBinding);
     }
 
     /** @test */
@@ -173,7 +187,51 @@ class ModelSearchAspectTest extends TestCase
 
         $searchAspect->getResults('taylor');
 
-        $expectedQuery = 'select * from "test_models" where "gender" = ? and "status" = ? and (LOWER(`name`) LIKE ?)';
+        $expectedQuery = 'select * from "test_models" where (LOWER("name") LIKE ? ESCAPE ?) and "gender" = ? and "status" = ?';
+
+        $executedQuery = Arr::get(DB::getQueryLog(), '0.query');
+
+        $this->assertEquals($expectedQuery, $executedQuery);
+    }
+
+    /** @test */
+    public function it_can_build_an_eloquent_query_with_or_clause()
+    {
+        TestModel::createWithNameAndLastNameAndGenderAndStatus('Taylor', 'Otwell', 'woman', true);
+
+        $searchAspect = ModelSearchAspect::forModel(TestModel::class)
+            ->addSearchableAttribute('name', true)
+            ->orWhere('gender', 'woman')
+            ->orWhere('status', 'activated');
+
+        DB::enableQueryLog();
+
+        $searchAspect->getResults('woman');
+
+        $expectedQuery = 'select * from "test_models" where (LOWER("name") LIKE ? ESCAPE ?) or "gender" = ? or "status" = ?';
+
+        $executedQuery = Arr::get(DB::getQueryLog(), '0.query');
+
+        $this->assertEquals($expectedQuery, $executedQuery);
+    }
+
+    /** @test */
+    public function it_can_build_an_eloquent_query_with_mixed_andor_clause()
+    {
+        TestModel::createWithNameAndLastNameAndGenderAndStatus('Taylor', 'Otwell', 'woman', true);
+
+        $searchAspect = ModelSearchAspect::forModel(TestModel::class)
+            ->addSearchableAttribute('name', true)
+            ->orWhere(function ($query) {
+                $query->where('gender', 'woman')
+                    ->Where('status', 'activated');
+            });
+
+        DB::enableQueryLog();
+
+        $searchAspect->getResults('woman');
+
+        $expectedQuery = 'select * from "test_models" where (LOWER("name") LIKE ? ESCAPE ?) or ("gender" = ? and "status" = ?)';
 
         $executedQuery = Arr::get(DB::getQueryLog(), '0.query');
 
